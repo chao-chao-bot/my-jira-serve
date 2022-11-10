@@ -2,6 +2,7 @@
  * 在这里定义和用户相关的路由处理函数，供 /router/user.js 模块进行调用
  */
  const db = require('../db/index')
+ const bcrypt = require('bcryptjs')
 // 注册用户的处理函数
 exports.regUser = (req, res) => {
   // 接收表单数据

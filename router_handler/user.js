@@ -3,6 +3,8 @@
  */
 const db = require('../db/index')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const config = require('../config')
 // 注册用户的处理函数
 exports.regUser = (req, res) => {
   // 接收表单数据
@@ -38,5 +40,28 @@ exports.regUser = (req, res) => {
 
 // 登录的处理函数
 exports.login = (req, res) => {
-  res.send('login OK')
+  // 接收表单数据
+  const userinfo = req.body
+  // 判断数据是否合法
+  if (!userinfo.username || !userinfo.password) {
+    return res.cc('用户名或密码不能为空！')
+  }
+  const sql = `select * from jira_user where username=?`
+  db.query(sql, userinfo.username, function (err, results) {
+    if (err) return res.cc(err)
+    if (results.length !== 1) return res.cc('登录失败！')
+    const compareResult = bcrypt.compareSync(userinfo.password, results[0].password)
+    if (!compareResult) {
+      return res.cc('登录失败！')
+    }
+    const user = { ...results[0], password: '' }
+    const tokenStr = jwt.sign(user, config.jwtSecretKey, {
+      expiresIn: '10h', 
+    })
+    res.send({
+      status: 0,
+      message: '登录成功！',
+      token: 'Bearer ' + tokenStr,
+    })
+  })
 }

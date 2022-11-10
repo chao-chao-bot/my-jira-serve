@@ -6,7 +6,7 @@ const userHandler = require('../router_handler/user')
 // 注册新用户
 router.post('/reguser', userHandler.regUser)
 // 登录
-router.get('/login', userHandler.login)
+router.post('/login', userHandler.login)
 
 
 module.exports = router

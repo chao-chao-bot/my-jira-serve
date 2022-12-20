@@ -1,7 +1,7 @@
 const res = require("express/lib/response");
 
 function reWriteSend(err,status = 1){
-  res.send({
+  res.ssend({
     status,
     message:err instanceof Error ? err.message:err
   })

@@ -11,29 +11,37 @@ exports.regUser = (req, res) => {
   const userinfo = req.body
   // 判断数据是否合法
   if (!userinfo.username || !userinfo.password) {
-    return res.cc('用户名或密码不能为空！')
+    return res.esend('用户名或密码不能为空！')
   }
   const sql = `select * from jira_user where username=?`
   db.query(sql, [userinfo.username], function (err, results) {
     if (err) {
-      return res.cc(err)
+      return res.esend(err)
     }
     // 用户名被占用
     if (results.length > 0) {
-      return res.cc('用户名被占用，请更换其他用户名！')
+      return res.esend('用户名被占用，请更换其他用户名！')
     }
     userinfo.password = bcrypt.hashSync(userinfo.password, 10)
     //注册用户
     const sql = 'insert into jira_user set ?'
     db.query(sql, { username: userinfo.username, password: userinfo.password }, function (err, results) {
       // 执行 SQL 语句失败
-      if (err) return res.cc('用户名或密码不能为空！')
+      if (err) return res.esend('用户名或密码不能为空！')
+
       // SQL 语句执行成功，但影响行数不为 1
       if (results.affectedRows !== 1) {
-        return res.cc('注册用户失败，请稍后再试！')
+        return res.esend('注册用户失败，请稍后再试！')
       }
-      // 注册成功
-      res.cc('注册成功！', 0)
+      const user = { ...results[0], password: '' }
+      const tokenStr = jwt.sign(user, config.jwtSecretKey, {
+        expiresIn: '10h',
+      })
+      res.ssend({user: {
+        token: 'Bearer ' + tokenStr,
+        name: userinfo.username,
+        id: userinfo.password,
+      }})
     })
   })
 }
@@ -44,24 +52,52 @@ exports.login = (req, res) => {
   const userinfo = req.body
   // 判断数据是否合法
   if (!userinfo.username || !userinfo.password) {
-    return res.cc('用户名或密码不能为空！')
+    return res.esend('用户名或密码不能为空！')
   }
   const sql = `select * from jira_user where username=?`
   db.query(sql, userinfo.username, function (err, results) {
-    if (err) return res.cc(err)
-    if (results.length !== 1) return res.cc('登录失败！')
+    if (err) return res.esend(err)
+    if (results.length !== 1) return res.esend('登录失败,请检查账号和密码')
     const compareResult = bcrypt.compareSync(userinfo.password, results[0].password)
     if (!compareResult) {
-      return res.cc('登录失败！')
+      return res.esend('登录失败,请检查账号和密码')
     }
     const user = { ...results[0], password: '' }
     const tokenStr = jwt.sign(user, config.jwtSecretKey, {
-      expiresIn: '10h', 
+      expiresIn: '40h',
     })
-    res.send({
-      status: 0,
-      message: '登录成功！',
-      token: 'Bearer ' + tokenStr,
+    setTimeout(()=>{
+      res.ssend({  
+        user: {
+          token: 'Bearer ' + tokenStr,
+          name: results[0].username,
+          id: results[0].id,
+        }
     })
+    },2000)
+   
   })
+}
+
+exports.getUser = (req, res) => {
+  const users = [
+    {
+      "id": 1,
+      "name": "张三"
+    },
+    {
+      "id": 2,
+      "name": "李四"
+    },
+    {
+      "id": 3,
+      "name": "王五"
+    },
+    {
+      "id": 4,
+      "name": "赵六"
+    }
+  ]
+  res.ssend(users)
+  
 }

@@ -10,12 +10,12 @@ exports.getUserInfo = (req, res) => {
     if (results.length !== 1){
       return res.esend('获取用户信息失败！')
     } 
-    console.log(results[0]);
+    const {id,username,email,user_pic,projects} = results[0]
     res.ssend({
       user:{
         status: 1,
         message: '获取用户基本信息成功！',
-        data: results[0],
+        data: {id,username,email,user_pic,projects},
       }
     })
   })

@@ -5,7 +5,7 @@ const router = express.Router()
 const project = require('../router_handler/project')
 
 
-router.get('/projects', project.getProject)
-router.post('/create/project',project.createProject)
+router.get('/projects', project.getProjectList)
+router.post('/project/create',project.createProject)
 
 module.exports = router

@@ -7,6 +7,7 @@ const userinfoRouter = require('./router/userinfo')
 const projectRouter = require('./router/project')
 // 解析 token 的中间件
 const expressJWT = require('express-jwt')
+const jwt = require('jsonwebtoken')
 const app = express()
 // 将 cors 注册为全局中间件
 app.use(cors())
@@ -37,7 +38,15 @@ app.use(expressJWT({ secret: config.jwtSecretKey }).unless({ path: [/^\/api\/use
 // 错误中间件
 app.use(function (err, req, res, next) {
   if (err.name === 'UnauthorizedError') return res.esend('身份认证失败！')
+  next()
 })
+app.use(function (req,res,next){
+  const token = req.headers["authorization"].replace("Bearer ", "");
+  const result = jwt.verify(token, config.jwtSecretKey); 
+  req.id = result.id
+  next()
+})
+
 app.use('/api', userRouter)
 app.use('/api', userinfoRouter)
 app.use('/api', projectRouter)

@@ -82,22 +82,40 @@ exports.login = (req, res) => {
 exports.getUser = (req, res) => {
   const users = [
     {
-      "id": 1,
-      "name": "张三"
+      "id": 2,
+      "username": "张三"
     },
     {
-      "id": 2,
-      "name": "李四"
+      "id": 1,
+      "username": "李四"
     },
     {
       "id": 3,
-      "name": "王五"
+      "username": "王五"
     },
     {
       "id": 4,
-      "name": "赵六"
+      "username": "赵六"
     }
   ]
   res.ssend(users)
   
+}
+
+exports.getAllUsers = (req,res)=>{
+  const param = req.query
+  console.log('param====',param);
+  const data = []
+  const sql = `select id,username from jira_user where username like  "%${param.code}%"`
+  db.query(sql,(err,results) => {
+    if(err){
+      return res.esend(err)
+    }
+
+    for(let i =0;i < results.length; i++){
+      const {username,id} = results[i]
+      data.unshift({value:String(id),label:username})
+    }
+      res.ssend(data)
+  })
 }

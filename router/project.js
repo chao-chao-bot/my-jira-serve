@@ -7,5 +7,6 @@ const project = require('../router_handler/project')
 
 router.get('/projects', project.getProjectList)
 router.post('/project/create',project.createProject)
+router.post('/project/delete',project.deleteProject)
 
 module.exports = router

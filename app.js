@@ -5,6 +5,7 @@ const userRouter = require('./router/user')
 const config = require('./config')
 const userinfoRouter = require('./router/userinfo')
 const projectRouter = require('./router/project')
+const teamtRouter = require('./router/team')
 // 解析 token 的中间件
 const expressJWT = require('express-jwt')
 const jwt = require('jsonwebtoken')
@@ -41,15 +42,20 @@ app.use(function (err, req, res, next) {
   next()
 })
 app.use(function (req,res,next){
-  const token = req.headers["authorization"].replace("Bearer ", "");
-  const result = jwt.verify(token, config.jwtSecretKey); 
-  req.id = result.id
+  const regexp = new RegExp("^/api/user")
+  if(!regexp.test(req.path)){
+    const token = req.headers["authorization"].replace("Bearer ", "");
+    const result = jwt.verify(token, config.jwtSecretKey); 
+    req.id = result.id
+  }
+  
   next()
 })
 
 app.use('/api', userRouter)
 app.use('/api', userinfoRouter)
 app.use('/api', projectRouter)
+app.use('/api', teamtRouter)
 
 app.listen(3000, function () {
   console.log('api server running at http://127.0.0.1:3000')

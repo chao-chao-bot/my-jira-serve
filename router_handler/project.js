@@ -3,10 +3,12 @@ const db = require("../db")
 
 exports.getProjectList = (req,res) =>{
   const {id} = req
-  console.log(req.query);
+  const {creator_id} = req.query
   const project_name = req.query.project_name || ""
-  //todo ：缺少负责人 需要建立表的连接查询以及模糊查询
-  const sql = `select j.username,p.* from projects p join jira_user j on p.creator_id = j.id having creator_id = ? and project_name like "%${project_name}%"`
+  let sql = `select j.username,p.* from projects p join jira_user j on p.creator_id = j.id having creator_id = ? `
+  if(project_name){
+    sql += `and project_name like "%${project_name}%"`
+  }
   db.query(sql,id,(err,results)=>{
     if(err){
       return res.esend(err)
@@ -51,4 +53,9 @@ exports.createProject = (req,res)=>{
       return res.ssend(results)
     })
   })  
+}
+
+exports.deleteProject = (req,res)=>{
+  //TODO：删除某个项目的时候需要检查当前项目下是否有任务要删除
+  //给出二次提示
 }

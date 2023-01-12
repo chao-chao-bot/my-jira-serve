@@ -8,9 +8,12 @@ const userHandler = require('../router_handler/user')
 router.post('/user/register', userHandler.regUser)
 // 登录
 router.post('/user/login', userHandler.login)
-//获取用户列表
 
+//获取负责人列表
 router.get('/users',userHandler.getUser)
+
+//获取所有用户列表
+router.get('/users/all',userHandler.getAllUsers)
 
 
 module.exports = router

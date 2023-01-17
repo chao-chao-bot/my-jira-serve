@@ -104,14 +104,13 @@ exports.getUser = (req, res) => {
 
 exports.getAllUsers = (req,res)=>{
   const param = req.query
-  console.log('param====',param);
+  const {id} = req
   const data = []
-  const sql = `select id,username from jira_user where username like  "%${param.code}%"`
+  const sql = `select id,username from jira_user where username like  "%${param.code}%" and id!=${id}`
   db.query(sql,(err,results) => {
     if(err){
       return res.esend(err)
     }
-
     for(let i =0;i < results.length; i++){
       const {username,id} = results[i]
       data.unshift({value:String(id),label:username})

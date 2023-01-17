@@ -42,13 +42,12 @@ app.use(function (err, req, res, next) {
   next()
 })
 app.use(function (req,res,next){
-  const regexp = new RegExp("^/api/user")
+  const regexp = new RegExp("^/api/auth")
   if(!regexp.test(req.path)){
     const token = req.headers["authorization"].replace("Bearer ", "");
     const result = jwt.verify(token, config.jwtSecretKey); 
     req.id = result.id
   }
-  
   next()
 })
 

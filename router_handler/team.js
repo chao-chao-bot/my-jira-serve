@@ -1,4 +1,6 @@
-const db = require("../db")
+const { REQUIRE_JOIN_TEAM } = require('./const')
+const db = require("../db");
+
 exports.createTeam = (req, res) => {
   const { id } = req
   console.log(req.body);
@@ -8,14 +10,18 @@ exports.createTeam = (req, res) => {
     if (err) {
       return res.ssend(err)
     }
-    if (result.length > 1) {
+    if (result.length >= 1) {
       return res.esend('团队名被占用，请更换其他用户名！')
     }
     const sql = `insert into team set ?`
     let memberStr = ''
-    if (member) {
+    if (member.length) {
       memberStr = member.join()
+      console.log(member, id);
       //通过socket.io 向所有memeber发送团队邀请
+      console.log(" hihi ");
+        
+      req.socketIO.emit('invite_member', "socket测试" + memberStr)
     }
     db.query(sql, { creator_id: id, team_name: team_name, member: memberStr }, (err, results) => {
       if (err) {

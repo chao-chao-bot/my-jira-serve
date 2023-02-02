@@ -33,14 +33,14 @@ exports.regUser = (req, res) => {
       if (results.affectedRows !== 1) {
         return res.esend('注册用户失败，请稍后再试！')
       }
-      const user = { ...results[0], password: '' }
+      const user = { ...results[0],id:results.insertId, password: '' }
       const tokenStr = jwt.sign(user, config.jwtSecretKey, {
         expiresIn: '10h',
       })
       res.ssend({user: {
         token: 'Bearer ' + tokenStr,
         name: userinfo.username,
-        id: userinfo.password,
+        id: results.insertId,
       }})
     })
   })
@@ -70,7 +70,7 @@ exports.login = (req, res) => {
       res.ssend({  
         user: {
           token: 'Bearer ' + tokenStr,
-          name: results[0].username,
+          username: results[0].username,
           id: results[0].id,
         }
     })

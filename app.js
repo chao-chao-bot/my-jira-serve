@@ -61,6 +61,7 @@ app.use(function (req, res, next) {
 })
 
 app.use(function (req, res, next) {
+  //正则匹配需要鉴权的路由
   const regexp = new RegExp("^/api/auth")
   if (!regexp.test(req.path)) {
     const token = req.headers["authorization"].replace("Bearer ", "");

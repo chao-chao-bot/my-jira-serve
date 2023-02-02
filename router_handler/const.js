@@ -1,6 +1,6 @@
-const REQUIRE_JOIN_TEAM = 'require_join_team'
+const INVITE_MEMBER = 'invite_member'
 
 module.exports ={
   //邀请团队成员
-  REQUIRE_JOIN_TEAM
+  INVITE_MEMBER
 }

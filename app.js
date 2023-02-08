@@ -67,6 +67,8 @@ app.use(function (req, res, next) {
     const token = req.headers["authorization"].replace("Bearer ", "");
     const result = jwt.verify(token, config.jwtSecretKey);
     req.id = result.id
+    req.username = result.username
+  
   }
   next()
 })

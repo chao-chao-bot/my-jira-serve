@@ -5,8 +5,9 @@ const router = express.Router()
 const project = require('../router_handler/project')
 
 
-router.get('/projects', project.getProjectList)
+router.get('/project/list', project.getProjectList)
 router.post('/project/create',project.createProject)
-router.post('/project/delete',project.deleteProject)
+router.post('/project/edit',project.editProject)
+router.post('/project/delete/:id',project.deleteProject)
 
 module.exports = router

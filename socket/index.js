@@ -1,5 +1,6 @@
 
 const db = require('../db')
+const {updateMember} = require('../router_handler/team.js')
 module.exports = (socketIO) => {
   socketIO.on('connection', (socket) => {
     console.log(`⚡: ${socket.id} 用户连接!`);
@@ -24,7 +25,7 @@ module.exports = (socketIO) => {
               }
             })
           } else if (results.length === 1) {
-            //更新
+            //更新团队成员
             const updateSql = `update socket set socket_id =? where user_id = ?`
             db.query(updateSql, [socket.id, id], (err, results) => {
               if (err) {
@@ -37,6 +38,9 @@ module.exports = (socketIO) => {
           } 
         })
       }
+      socket.on('agree_to_join',(data)=>{
+        updateMember(userInfo,data)
+      })
     })
     socket.on('disconnect', () => {
       console.log('🔥: 一个用户已断开连接');

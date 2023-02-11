@@ -1,19 +1,24 @@
 const db = require("../db")
-
+const { getMemberList } = require('./team')
 /**项目列表 */
 exports.getProjectList = (req, res) => {
   const { id } = req
-  const { creator_id } = req.query
+  const { commander } = req.query
   const project_name = req.query.project_name || ""
-  let sql = `select j.username,p.* from project p join jira_user j on p.creator_id = j.id having creator_id = ? `
+  let sql = `select u.username  as commander_name,p.* from project p join user u on p.creator_id = ? and u.id =  p.commander `
   if (project_name) {
     sql += `and project_name like "%${project_name}%"`
+  }
+  if (commander) {
+    sql += `and p.commander = ${commander}`
   }
   db.query(sql, id, (err, results) => {
     if (err) {
       return res.esend(err)
     }
+
     return res.ssend(results)
+
   })
 }
 
@@ -39,13 +44,13 @@ exports.createProject = (req, res) => {
       return res.esend("项目名称已存在，请重试")
     }
     const insertSql = 'insert into project set ?'
-    db.query(insertSql, { creator_id: id, project_name, project_prefix, introduction: dataInfo.introduction || "" }, (err, results) => {
+    db.query(insertSql, { ...dataInfo || "" }, (err, results) => {
       if (err) return res.esend(err)
       if (results.affectedRows !== 1) {
         return res.esend('创建项目失败，请稍后再试！')
       }
     })
-    const searchSql = `select project_name, project_prefix,introduction from project where creator_id = ? `
+    const searchSql = `select p.*, username as commmander_name from user u join project p on creator_id = ? and u.id =  p.commander`
     db.query(searchSql, id, (err, results) => {
       if (err) {
         return res.esend(err)
@@ -66,34 +71,63 @@ exports.deleteProject = (req, res) => {
 
 //项目编辑
 exports.editProject = (req, res) => {
-  const {id:project_id,...projectInfo} = req.body
+  const { id: project_id, ...projectInfo } = req.body
   const { id } = req
   const sql = `select * from project where creator_id = ?`
   db.query(sql, id, (err, results) => {
     if (err) {
-     return  res.esend(err)
+      return res.esend(err)
     }
     for (let i = 0; i < results.length; i++) {
-      if ( projectInfo['project_name'] && results[i].project_name === project_name) {
+      if (projectInfo['project_name'] && results[i].project_name === project_name) {
         return res.esend("当前项目名称已存在")
       } else if (projectInfo['project_prefix'] && results[i].project_prefix === project_prefix) {
         return res.esend("当前项目关键字已存在")
       }
     }
-    console.log(projectInfo);
     const sql = `update project set ? where id = ?`
-    db.query(sql, [projectInfo,project_id], (err, results) => {
+    db.query(sql, [projectInfo, project_id], (err, results) => {
       if (err) {
-       return res.esend(err)
+        return res.esend(err)
       }
       const sql = `select * from project where id =?`
-      db.query(sql,project_id,(err,results)=>{
+      db.query(sql, project_id, (err, results) => {
         if (err) {
           return res.esend(err)
-         }
-         return res.ssend(results[0]) 
+        }
+        return res.ssend(results[0])
       })
     })
   })
-  
 }
+
+/**负责人列表 */
+exports.getCommanderList = (req, res) => {
+  const { id } = req
+  const sql = `select p.commander,u.username from project p join user u where p.commander = u.id and creator_id =? group by p.commander;`
+  db.query(sql, id, (err, results) => {
+    if (err) {
+      return res.esend(err)
+    }
+    return res.ssend(results.map((item) => ({ id: item.commander, username: item.username })))
+  })
+}
+/**项目删除 */
+
+exports.deleteProject = (req, res) => {
+  const { project_id } = req.body
+  const sql = `delete from project where id =?`
+  //todo判断当下项目的关联任务的进度如何 再次确定是否要删除
+  db.query(sql, project_id, (err, results) => {
+    if (err) {
+      res.esend(err)
+    }
+    if(results.affectedRows !== 1){
+      res.esend('删除失败，请稍后再试！')
+    }
+    return res.ssend(results)
+
+
+  })
+}
+

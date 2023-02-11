@@ -1,7 +1,7 @@
 const db = require('../db/index')
 
 exports.getUserInfo = (req, res) => {
-  const sql = `select * from jira_user where id=?`
+  const sql = `select * from user where id=?`
   db.query(sql, req.user.id, (err, results) => {
     if (err){
       res.statusCode = 500

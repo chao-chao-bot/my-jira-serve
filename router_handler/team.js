@@ -119,7 +119,8 @@ exports.getTeamList = (req, res) => {
     if (err) {
       res.esend(err)
     }
-    return res.ssend(results)
+      return res.ssend(results)
+    
   })
 }
 //邀请成员加入团队
@@ -158,7 +159,7 @@ exports.getMemberList = (req, res) => {
     })
   })
   p.then((memberArr) => {
-    const sql = `select id,username,email from jira_user where id = ?`
+    const sql = `select id,username,email from user where id = ?`
     Promise.all(
       memberArr.map((item) => {
         return new Promise((resolve, reject) => {

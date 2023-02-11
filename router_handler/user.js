@@ -13,7 +13,7 @@ exports.regUser = (req, res) => {
   if (!userinfo.username || !userinfo.password) {
     return res.esend('用户名或密码不能为空！')
   }
-  const sql = `select * from jira_user where username=?`
+  const sql = `select * from user where username=?`
   db.query(sql, [userinfo.username], function (err, results) {
     if (err) {
       return res.esend(err)
@@ -24,7 +24,7 @@ exports.regUser = (req, res) => {
     }
     userinfo.password = bcrypt.hashSync(userinfo.password, 10)
     //注册用户
-    const sql = 'insert into jira_user set ?'
+    const sql = 'insert into user set ?'
     db.query(sql, { username: userinfo.username, password: userinfo.password }, function (err, results) {
       // 执行 SQL 语句失败
       if (err) return res.esend('用户名或密码不能为空！')
@@ -54,7 +54,7 @@ exports.login = (req, res) => {
   if (!userinfo.username || !userinfo.password) {
     return res.esend('用户名或密码不能为空！')
   }
-  const sql = `select * from jira_user where username=?`
+  const sql = `select * from user where username=?`
   db.query(sql, userinfo.username, function (err, results) {
     if (err) return res.esend(err)
     if (results.length !== 1) return res.esend('登录失败,请检查账号和密码')
@@ -106,7 +106,7 @@ exports.getAllUsers = (req,res)=>{
   const param = req.query
   const {id} = req
   const data = []
-  const sql = `select id,username from jira_user where username like  "%${param.code}%" and id!=${id}`
+  const sql = `select id,username from user where username like  "%${param.code}%" and id!=${id}`
   db.query(sql,(err,results) => {
     if(err){
       return res.esend(err)

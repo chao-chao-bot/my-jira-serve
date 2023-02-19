@@ -33,15 +33,15 @@ exports.regUser = (req, res) => {
       if (results.affectedRows !== 1) {
         return res.esend('注册用户失败，请稍后再试！')
       }
-      const user = { ...results[0],id:results.insertId, password: '' }
+      const user = { ...results[0], id: results.insertId, password: '' }
       const tokenStr = jwt.sign(user, config.jwtSecretKey, {
         expiresIn: '10h',
       })
-      res.ssend({user: {
+      res.ssend({
         token: 'Bearer ' + tokenStr,
-        name: userinfo.username,
+        username: userinfo.username,
         id: results.insertId,
-      }})
+      })
     })
   })
 }
@@ -66,16 +66,14 @@ exports.login = (req, res) => {
     const tokenStr = jwt.sign(user, config.jwtSecretKey, {
       expiresIn: '40h',
     })
-    setTimeout(()=>{
-      res.ssend({  
-        user: {
-          token: 'Bearer ' + tokenStr,
-          username: results[0].username,
-          id: results[0].id,
-        }
-    })
-    },2000)
-   
+    setTimeout(() => {
+      res.ssend({
+        token: 'Bearer ' + tokenStr,
+        username: results[0].username,
+        id: results[0].id,
+      })
+    }, 2000)
+
   })
 }
 
@@ -99,22 +97,22 @@ exports.getUser = (req, res) => {
     }
   ]
   res.ssend(users)
-  
+
 }
 
-exports.getAllUsers = (req,res)=>{
+exports.getAllUsers = (req, res) => {
   const param = req.query
-  const {id} = req
+  const { id } = req
   const data = []
   const sql = `select id,username from user where username like  "%${param.code}%" and id!=${id}`
-  db.query(sql,(err,results) => {
-    if(err){
+  db.query(sql, (err, results) => {
+    if (err) {
       return res.esend(err)
     }
-    for(let i =0;i < results.length; i++){
-      const {username,id} = results[i]
-      data.unshift({value:String(id),label:username})
+    for (let i = 0; i < results.length; i++) {
+      const { username, id } = results[i]
+      data.unshift({ value: String(id), label: username })
     }
-      res.ssend(data)
+    res.ssend(data)
   })
 }

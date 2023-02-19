@@ -1,15 +1,15 @@
 const { INVITE_MEMBER } = require('./const')
 
 const { unique, toNumber } = require('../utils/index')
-const db = require("../db");
+const db = require('../db')
 /**
- * 
- * @param {*被邀请的成员} member 
- * @param {*} req 
- * @param {*} res 
- * @param {*用户id} id 
- * @param {*团队名称} team_name 
- * @param {*用户名称} username 
+ *
+ * @param {*被邀请的成员} member
+ * @param {*} req
+ * @param {*} res
+ * @param {*用户id} id
+ * @param {*团队名称} team_name
+ * @param {*用户名称} username
  */
 const requireMember = (member, req, res, id, team_name) => {
   //通过socket.io 向所有memeber发送团队邀请
@@ -31,8 +31,10 @@ const requireMember = (member, req, res, id, team_name) => {
   }
   p.then(() => {
     for (let i = 0; i < searchRes.length; i++) {
-      console.log("luelueue", INVITE_MEMBER);
-      req.socketIO.to(searchRes[i].socket_id).emit(INVITE_MEMBER, { inviter: req.username, inviter_id: id, team_name })
+      console.log('luelueue', INVITE_MEMBER)
+      req.socketIO
+        .to(searchRes[i].socket_id)
+        .emit(INVITE_MEMBER, { inviter: req.username, inviter_id: id, team_name })
     }
   })
 }
@@ -51,7 +53,7 @@ exports.createTeam = (req, res) => {
     }
     if (member && member.length) {
       const sql = `select username from socket where user_id = ?`
-      new Promise((resolve) => {
+      new Promise(resolve => {
         db.query(sql, id, (err, results) => {
           if (err) {
             return res.ssend(err)
@@ -60,7 +62,7 @@ exports.createTeam = (req, res) => {
             resolve(results[0].username)
           }
         })
-      }).then((username) => {
+      }).then(username => {
         requireMember(member, req, res, id, team_name)
       })
     }
@@ -84,18 +86,17 @@ exports.createTeam = (req, res) => {
 }
 //
 exports.updateMember = (user, inviter) => {
-  console.log(user);
+  console.log(user)
   const sql = 'select member from team where creator_id =? and team_name=?'
   db.query(sql, [inviter.inviter_id, inviter.team_name], (err, results) => {
-
     if (err || results.length > 1) {
-      console.log(err);
+      console.log(err)
       throw new Error(err)
     }
     let memberArr = []
     let memberStr = user.id.toString()
     if (results[0] && results[0].member) {
-      memberArr = results[0].member.split(",")
+      memberArr = results[0].member.split(',')
       //过滤已经存在成员
       if (!memberArr.includes(user.id.toString())) {
         memberArr.push(user.id.toString())
@@ -113,14 +114,13 @@ exports.updateMember = (user, inviter) => {
 
 exports.getTeamList = (req, res) => {
   const { id } = req
-  console.log(id);
+  console.log(id)
   const sql = `select * from team where creator_id = ?`
   db.query(sql, id, (err, results) => {
     if (err) {
       res.esend(err)
     }
-      return res.ssend(results)
-    
+    return res.ssend(results)
   })
 }
 //邀请成员加入团队
@@ -148,7 +148,7 @@ exports.getMemberList = (req, res) => {
         return res.esend(err)
       }
       for (let i = 0; i < results.length; i++) {
-        const arr = results[i].member.split(",")
+        const arr = results[i].member.split(',')
         member.push(...arr)
       }
       member = unique(member)
@@ -158,16 +158,15 @@ exports.getMemberList = (req, res) => {
       resolve(member)
     })
   })
-  p.then((memberArr) => {
+  p.then(memberArr => {
     const sql = `select id,username,email from user where id = ?`
     Promise.all(
-      memberArr.map((item) => {
+      memberArr.map(item => {
         return new Promise((resolve, reject) => {
           db.query(sql, item, (err, results) => {
             if (err) {
               return reject(err)
-            }
-            else {
+            } else {
               resolve(results[0])
             }
           })
@@ -181,4 +180,3 @@ exports.getMemberList = (req, res) => {
     })
   })
 }
-

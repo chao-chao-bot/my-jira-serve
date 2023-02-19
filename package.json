@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "bcryptjs": "^2.4.3",
+    "eslint": "^8.34.0",
     "express-jwt": "5.3.3",
     "jsonwebtoken": "^9.0.0",
     "msql": "^1.0.3",

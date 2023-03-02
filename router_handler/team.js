@@ -1,4 +1,4 @@
-const { INVITE_MEMBER } = require('./const')
+const { INVITE_MEMBER } = require('./const/team/index')
 
 const { unique, toNumber } = require('../utils/index')
 const db = require('../db')
@@ -159,7 +159,7 @@ exports.getMemberList = (req, res) => {
     })
   })
   p.then(memberArr => {
-    const sql = `select id,username,email from user where id = ?`
+    const sql = `select id,username as name,email from user where id = ?`
     Promise.all(
       memberArr.map(item => {
         return new Promise((resolve, reject) => {

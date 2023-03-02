@@ -1,24 +1,29 @@
-
 // 导入 express 模块
 const express = require('express')
 const cors = require('cors')
-const userRouter = require('./router/user')
+
 const config = require('./config')
-const userinfoRouter = require('./router/userinfo')
-const projectRouter = require('./router/project')
-const teamtRouter = require('./router/team')
+const {
+  userRouter,
+  projectRouter,
+  teamtRouter,
+  kanbanRouter,
+  taskRouter,
+  userinfoRouter
+} = require('./router')
+
 // 解析 token 的中间件
 const expressJWT = require('express-jwt')
 const jwt = require('jsonwebtoken')
 const app = express()
 const server = require('http').Server(app)
-const { Server } = require("socket.io");
+const { Server } = require('socket.io')
 const socketIO = new Server(server, {
   cors: {
-    origin: "http://localhost:5000"
+    origin: 'http://localhost:5000'
   }
-});
-require('./socket/index.js')(socketIO);
+})
+require('./socket/index.js')(socketIO)
 app.use(cors())
 
 app.use((req, res, next) => {
@@ -55,20 +60,18 @@ app.use(function (req, res, next) {
     req.socketIO = socketIO
     next()
   } else {
-    res.esend("socket 连接失败！")
+    res.esend('socket 连接失败！')
   }
-
 })
 
 app.use(function (req, res, next) {
   //正则匹配需要鉴权的路由
-  const regexp = new RegExp("^/api/auth")
+  const regexp = new RegExp('^/api/auth')
   if (!regexp.test(req.path)) {
-    const token = req.headers["authorization"].replace("Bearer ", "");
-    const result = jwt.verify(token, config.jwtSecretKey);
+    const token = req.headers['authorization'].replace('Bearer ', '')
+    const result = jwt.verify(token, config.jwtSecretKey)
     req.id = result.id
     req.username = result.username
-  
   }
   next()
 })
@@ -77,6 +80,8 @@ app.use('/api', userRouter)
 app.use('/api', userinfoRouter)
 app.use('/api', projectRouter)
 app.use('/api', teamtRouter)
+app.use('/api', kanbanRouter)
+app.use('/api', taskRouter)
 
 server.listen(3000, function () {
   console.log('api server running at http://127.0.0.1:3000')

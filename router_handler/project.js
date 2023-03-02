@@ -1,4 +1,5 @@
 const db = require('../db')
+const { initialKanBanList } = require('./const/kanban')
 const { getMemberList } = require('./team')
 /**项目列表 */
 exports.getProjectList = (req, res) => {
@@ -16,11 +17,10 @@ exports.getProjectList = (req, res) => {
     if (err) {
       return res.esend(err)
     }
-
     return res.ssend(results)
   })
 }
-
+/**项目创建 */
 exports.createProject = (req, res) => {
   const { id } = req
   const dataInfo = req.body
@@ -47,22 +47,31 @@ exports.createProject = (req, res) => {
     db.query(
       insertSql,
       {
-        ...(dataInfo || '')
+        ...(dataInfo || ''),
+        creator_id: id
       },
       (err, results) => {
         if (err) return res.esend(err)
         if (results.affectedRows !== 1) {
           return res.esend('创建项目失败，请稍后再试！')
         }
+        const insertedId = results.insertId
+        const searchSql = `select p.*, username as commmander_name from user u join project p on creator_id = ? and u.id =  p.commander`
+        db.query(searchSql, id, (err, projectList) => {
+          if (err) {
+            return res.esend(err)
+          }
+          const kanbanList = initialKanBanList.map(item => [item.name, insertedId])
+          const createKabnSql = `insert into kanban(name,project_id) values ?`
+          db.query(createKabnSql, [kanbanList], (err, results) => {
+            if (err) {
+              return res.esend('初始化看板失败' + err.message)
+            }
+            return res.ssend(projectList)
+          })
+        })
       }
     )
-    const searchSql = `select p.*, username as commmander_name from user u join project p on creator_id = ? and u.id =  p.commander`
-    db.query(searchSql, id, (err, results) => {
-      if (err) {
-        return res.esend(err)
-      }
-      return res.ssend(results)
-    })
   })
 }
 /**项目删除 */
@@ -110,6 +119,7 @@ exports.editProject = (req, res) => {
       updateProject(project_info, id)
     })
   } else {
+    console.log('hihihi')
     updateProject(project_info, id)
   }
 }
@@ -118,7 +128,7 @@ exports.editProject = (req, res) => {
 exports.getCommanderList = (req, res) => {
   const { id } = req
   const sql =
-    'select  p.commander,u.username from project p join user u where p.commander = u.id and creator_id =? group by p.commander;'
+    'select p.commander,u.username from project p join user u where p.commander = u.id and creator_id =? group by p.commander;'
   db.query(sql, id, (err, results) => {
     if (err) {
       return res.esend(err)
@@ -126,7 +136,7 @@ exports.getCommanderList = (req, res) => {
     return res.ssend(
       results.map(item => ({
         id: item.commander,
-        username: item.username
+        name: item.username
       }))
     )
   })
@@ -135,6 +145,7 @@ exports.getCommanderList = (req, res) => {
 
 exports.deleteProject = (req, res) => {
   const { project_id } = req.body
+  console.log(project_id)
   const sql = `delete from project where id =?`
   //todo判断当下项目的关联任务的进度如何 再次确定是否要删除
   db.query(sql, project_id, (err, results) => {

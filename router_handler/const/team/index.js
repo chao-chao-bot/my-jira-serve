@@ -1,6 +1,6 @@
 const INVITE_MEMBER = 'invite_member'
 
-module.exports ={
+module.exports = {
   //邀请团队成员
   INVITE_MEMBER
 }

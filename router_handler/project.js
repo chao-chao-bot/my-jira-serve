@@ -141,8 +141,8 @@ exports.getCommanderList = (req, res) => {
     )
   })
 }
-/**项目删除 */
 
+/**项目删除 */
 exports.deleteProject = (req, res) => {
   const { project_id } = req.body
   console.log(project_id)
@@ -158,7 +158,7 @@ exports.deleteProject = (req, res) => {
     return res.ssend(results)
   })
 }
-
+/**项目详情 */
 exports.getInfoProject = (req, res) => {
   const { project_id } = req.query
   const sql = `select * from project where id =?`

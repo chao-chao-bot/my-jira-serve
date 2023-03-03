@@ -1,4 +1,4 @@
-const typeList = require('./const/task')
+const { TaskTypes, TaskPriorities } = require('./const/task')
 // console.log(typeList)
 exports.getTasklist = (req, res) => {
   res.ssend([
@@ -20,5 +20,9 @@ exports.getTasklist = (req, res) => {
 }
 
 exports.getTaskTypelist = (req, res) => {
-  res.ssend(typeList)
+  res.ssend(TaskTypes)
+}
+
+exports.getTaskPriorities = (req, res) => {
+  res.ssend(TaskPriorities)
 }

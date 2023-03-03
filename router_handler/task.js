@@ -1,3 +1,4 @@
+const db = require('../db')
 const { TaskTypes, TaskPriorities } = require('./const/task')
 // console.log(typeList)
 exports.getTasklist = (req, res) => {
@@ -25,4 +26,42 @@ exports.getTaskTypelist = (req, res) => {
 
 exports.getTaskPriorities = (req, res) => {
   res.ssend(TaskPriorities)
+}
+/**创建项目 */
+exports.createTask = (req, res) => {
+  const { id: userId } = req
+  const {
+    name,
+    projectId: project_id,
+    kanbanId: kanban_id,
+    endDate: end_date,
+    taskType: type_id,
+    describe,
+    priority,
+    commander
+  } = req.body
+  console.log(req.body)
+  const sql = `insert into task  set ?`
+  db.query(
+    sql,
+    {
+      project_id,
+      kanban_id,
+      end_date,
+      type_id,
+      describe: describe || '',
+      priority: priority || TaskPriorities[0].id,
+      commander,
+      creator: userId
+    },
+    (err, results) => {
+      if (err) {
+        return res.esend(err)
+      }
+      if (results.affectedRows !== 1) {
+        return res.esend('创建团队失败，请稍后再试！')
+      }
+      return res.ssend(results)
+    }
+  )
 }

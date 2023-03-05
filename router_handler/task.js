@@ -1,23 +1,37 @@
 const db = require('../db')
 const { TaskTypes, TaskPriorities } = require('./const/task')
-// console.log(typeList)
+
 exports.getTasklist = (req, res) => {
-  res.ssend([
-    { name: 'tasks1', id: 1, kanbanId: 1, typeId: 1 },
-    { name: 'tasks2', id: 2, kanbanId: 2, typeId: 2 },
-    { name: 'tasks3', id: 3, kanbanId: 3, typeId: 3 },
-    { name: 'tasks4', id: 4, kanbanId: 1, typeId: 1 },
-    { name: 'tasks5', id: 5, kanbanId: 3, typeId: 2 },
-    { name: 'tasks6', id: 6, kanbanId: 3, typeId: 3 },
-    { name: 'tasks7', id: 7, kanbanId: 2, typeId: 1 },
-    { name: 'tasks8', id: 8, kanbanId: 1, typeId: 2 },
-    { name: 'tasks9', id: 9, kanbanId: 3, typeId: 3 },
-    { name: 'tasks9', id: 10, kanbanId: 3, typeId: 3 },
-    { name: 'tasks9', id: 11, kanbanId: 3, typeId: 3 },
-    { name: 'tasks9', id: 12, kanbanId: 3, typeId: 3 },
-    { name: 'tasks9', id: 13, kanbanId: 3, typeId: 3 },
-    { name: 'tasks9', id: 14, kanbanId: 3, typeId: 3 }
-  ])
+  const { id: user_id } = req
+  const { projectId, name, typeId, processorId } = req.query
+  let sql = `select * from task where creator = ?`
+  if (name) {
+    sql += ` and name like "%${name}%"`
+  }
+  if (typeId) {
+    sql += ` and type_id = ${typeId}`
+  }
+  if (processorId) {
+    sql += ` and commander = ${processorId}`
+  }
+  if (projectId) {
+    sql += ` and project_id  = ${projectId}`
+  }
+  db.query(sql, user_id, (err, results) => {
+    if (err) {
+      throw new Error(err)
+      return res.esend(err)
+    }
+
+    const forMatRes = results.map(({ project_id, kanban_id, end_date, type_id, ...reset }) => ({
+      projectId: project_id,
+      kanbanId: kanban_id,
+      endDate: end_date,
+      typeId: type_id,
+      ...reset
+    }))
+    return res.ssend(forMatRes)
+  })
 }
 
 exports.getTaskTypelist = (req, res) => {
@@ -40,11 +54,11 @@ exports.createTask = (req, res) => {
     priority,
     commander
   } = req.body
-  console.log(req.body)
   const sql = `insert into task  set ?`
   db.query(
     sql,
     {
+      name,
       project_id,
       kanban_id,
       end_date,
@@ -61,7 +75,17 @@ exports.createTask = (req, res) => {
       if (results.affectedRows !== 1) {
         return res.esend('创建团队失败，请稍后再试！')
       }
-      return res.ssend(results)
+      return res.ssend({})
     }
   )
+}
+
+exports.reorderTask = (req, res) => {
+  console.log(req.body)
+  const { fromId, referenceId, fromKanbanId, toKanbanId } = req.body
+  if (fromKanbanId && toKanbanId) {
+    console.log('nenne')
+  }
+
+  return res.ssend([])
 }

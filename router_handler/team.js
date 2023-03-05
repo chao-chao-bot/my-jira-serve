@@ -86,11 +86,9 @@ exports.createTeam = (req, res) => {
 }
 //
 exports.updateMember = (user, inviter) => {
-  console.log(user)
   const sql = 'select member from team where creator_id =? and team_name=?'
   db.query(sql, [inviter.inviter_id, inviter.team_name], (err, results) => {
     if (err || results.length > 1) {
-      console.log(err)
       throw new Error(err)
     }
     let memberArr = []

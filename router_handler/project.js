@@ -76,9 +76,6 @@ exports.createProject = (req, res) => {
 }
 /**项目删除 */
 exports.deleteProject = (req, res) => {
-  // console.log(req.query);
-  console.log(req.params)
-  console.log(req.body)
   //TODO：删除某个项目的时候需要检查当前项目下是否有任务要删除
   //给出二次提示
   return res.ssend([])

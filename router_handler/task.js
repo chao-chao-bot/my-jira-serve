@@ -56,13 +56,13 @@ exports.createTask = (req, res) => {
     priority,
     commander
   } = req.body
-  const countSql = `SELECT COUNT(*) as total FROM task;`
+  const countSql = `SELECT MAX(order_id) as maxOrderId FROM task;`
   db.query(countSql, (err, results) => {
     if (err) {
       console.error(err)
       return res.esend(err)
     }
-    const total = results[0].total
+    const maxOrderId = results[0].maxOrderId
     const sql = `insert into task  set ?`
     db.query(
       sql,
@@ -76,7 +76,7 @@ exports.createTask = (req, res) => {
         priority: priority || TaskPriorities[0].id,
         commander,
         creator: userId,
-        order_id: total + 1
+        order_id: maxOrderId + 1
       },
       (err, results) => {
         if (err) {

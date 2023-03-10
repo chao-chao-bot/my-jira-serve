@@ -21,15 +21,15 @@ exports.getKanbanlist = (req, res) => {
 ///kanban/create
 exports.createKanBan = (req, res) => {
   const { name, projectId: project_id } = req.body
-  const countSql = `SELECT COUNT(*) as total  FROM kanban;`
+  const countSql = `SELECT MAX(order_id) as maxOrderId  FROM kanban;`
   db.query(countSql, (err, results) => {
     if (err) {
       console.error(err)
       return res.esend(err)
     }
-    const total = results[0].total
+    const maxOrderId = results[0].maxOrderId
     const sql = `insert into kanban set ?`
-    db.query(sql, { name, project_id, order_id: total + 1 }, (err, results) => {
+    db.query(sql, { name, project_id, order_id: maxOrderId + 1 }, (err, results) => {
       if (err) {
         return res.ssend(err)
       }

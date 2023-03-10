@@ -116,7 +116,6 @@ exports.editProject = (req, res) => {
       updateProject(project_info, id)
     })
   } else {
-    console.log('hihihi')
     updateProject(project_info, id)
   }
 }

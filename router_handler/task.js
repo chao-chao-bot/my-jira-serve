@@ -1,4 +1,5 @@
 const db = require('../db')
+const { reorderData } = require('./util/reorder')
 const { TaskTypes, TaskPriorities } = require('./const/task')
 
 exports.getTasklist = (req, res) => {
@@ -17,6 +18,7 @@ exports.getTasklist = (req, res) => {
   if (projectId) {
     sql += ` and project_id  = ${projectId}`
   }
+  sql += ` order by order_id`
   db.query(sql, user_id, (err, results) => {
     if (err) {
       throw new Error(err)
@@ -54,38 +56,64 @@ exports.createTask = (req, res) => {
     priority,
     commander
   } = req.body
-  const sql = `insert into task  set ?`
-  db.query(
-    sql,
-    {
-      name,
-      project_id,
-      kanban_id,
-      end_date,
-      type_id,
-      describe: describe || '',
-      priority: priority || TaskPriorities[0].id,
-      commander,
-      creator: userId
-    },
-    (err, results) => {
+  const countSql = `SELECT COUNT(*) as total FROM task;`
+  db.query(countSql, (err, results) => {
+    if (err) {
+      console.error(err)
+      return res.esend(err)
+    }
+    const total = results[0].total
+    const sql = `insert into task  set ?`
+    db.query(
+      sql,
+      {
+        name,
+        project_id,
+        kanban_id,
+        end_date,
+        type_id,
+        describe: describe || '',
+        priority: priority || TaskPriorities[0].id,
+        commander,
+        creator: userId,
+        order_id: total + 1
+      },
+      (err, results) => {
+        if (err) {
+          return res.esend(err)
+        }
+        if (results.affectedRows !== 1) {
+          return res.esend('创建团队失败，请稍后再试！')
+        }
+        return res.ssend({})
+      }
+    )
+  })
+}
+
+exports.reorderTask = async (req, res) => {
+  const { fromId, referenceId, fromKanbanId, toKanbanId } = req.body
+  if (fromKanbanId === toKanbanId) {
+    await reorderData('task', fromId, referenceId)
+    return res.ssend([])
+  } else {
+    const getMaxIdSql = `select MAX(order_id) as maxOrderId from task`
+    db.query(getMaxIdSql, (err, results) => {
       if (err) {
         return res.esend(err)
       }
-      if (results.affectedRows !== 1) {
-        return res.esend('创建团队失败，请稍后再试！')
-      }
-      return res.ssend({})
-    }
-  )
-}
-
-exports.reorderTask = (req, res) => {
-  console.log(req.body)
-  const { fromId, referenceId, fromKanbanId, toKanbanId } = req.body
-  if (fromKanbanId && toKanbanId) {
-    console.log('nenne')
+      const maxOrderId = results[0].maxOrderId
+      const updateSql = `update task set order_id = ?,kanban_id = ? where order_id = ?`
+      db.query(updateSql, [maxOrderId + 1, toKanbanId, fromId], async (err, results) => {
+        if (err) {
+          return res.esend(err)
+        }
+        if (referenceId) {
+          await reorderData('task', maxOrderId + 1, referenceId)
+          return res.ssend([])
+        }
+        return res.ssend([])
+      })
+    })
   }
-
-  return res.ssend([])
 }
